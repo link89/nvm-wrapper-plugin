@@ -8,3 +8,9 @@ jenkins-nvm-wrapper-plugin.iml
 jenkins-nvm-plugin.iml
 classes/
 nvm-wrapper-plugin.iml
+.DS_Store
+src/.DS_Store
+src/test/.DS_Store
+src/test/java/org/.DS_Store
+src/test/java/org/jenkinsci/.DS_Store
+src/test/java/org/jenkinsci/plugins/.DS_Store
