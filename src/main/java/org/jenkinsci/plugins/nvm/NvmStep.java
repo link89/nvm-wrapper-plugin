@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-
 public class NvmStep extends Step {
 
   private final @Nonnull String version;
@@ -26,14 +25,14 @@ public class NvmStep extends Step {
   private String nvmNodeJsOrgMirror;
   private String nvmIoJsOrgMirror;
   private String nvmInstallDir;;
-  private String nvmInstallNodeVersion;
 
   @DataBoundConstructor
   public NvmStep(final String version) {
     this.version = version;
-    this.nvmInstallURL = NvmDefaults.nvmInstallURL;
-    this.nvmNodeJsOrgMirror = NvmDefaults.nvmNodeJsOrgMirror;
-    this.nvmIoJsOrgMirror = NvmDefaults.nvmIoJsOrgMirror;
+    this.nvmInstallDir = NvmDefaults.NVM_INSTALL_DIR;
+    this.nvmInstallURL = NvmDefaults.NVM_INSTALL_URL;
+    this.nvmNodeJsOrgMirror = NvmDefaults.NVM_NODE_JS_ORG_MIRROR;
+    this.nvmIoJsOrgMirror = NvmDefaults.NVM_IO_JS_ORG_MIRROR;
   }
 
   public String getVersion() {
@@ -41,7 +40,7 @@ public class NvmStep extends Step {
   }
 
   @DataBoundSetter
-  public void setNvmInstallURL(String nvmInstallURL) {
+  public void setNvmInstallURL(final String nvmInstallURL) {
     this.nvmInstallURL = nvmInstallURL;
   }
 
@@ -50,7 +49,7 @@ public class NvmStep extends Step {
   }
 
   @DataBoundSetter
-  public void setNvmNodeJsOrgMirror(String nvmNodeJsOrgMirror) {
+  public void setNvmNodeJsOrgMirror(final String nvmNodeJsOrgMirror) {
     this.nvmNodeJsOrgMirror = nvmNodeJsOrgMirror;
   }
 
@@ -59,7 +58,7 @@ public class NvmStep extends Step {
   }
 
   @DataBoundSetter
-  public void setNvmIoJsOrgMirror(String nvmIoJsOrgMirror) {
+  public void setNvmIoJsOrgMirror(final String nvmIoJsOrgMirror) {
     this.nvmIoJsOrgMirror = nvmIoJsOrgMirror;
   }
 
@@ -72,25 +71,14 @@ public class NvmStep extends Step {
   }
 
   @DataBoundSetter
-  public void setNvmInstallDir(String nvmInstallDir) {
+  public void setNvmInstallDir(final String nvmInstallDir) {
     this.nvmInstallDir = nvmInstallDir;
-  }
-
-
-
-  public String getNvmInstallNodeVersion() {
-    return nvmInstallNodeVersion;
-  }
-
-  @DataBoundSetter
-  public void setNvmInstallNodeVersion(String nvmInstallNodeVersion) {
-    this.nvmInstallNodeVersion = nvmInstallNodeVersion;
   }
 
   @Override
   public StepExecution start(final StepContext context) throws Exception {
     return new Execution(this.version, this.nvmInstallURL, this.nvmNodeJsOrgMirror, this.nvmIoJsOrgMirror,
-                         this.nvmInstallDir, this.nvmInstallNodeVersion,  context);
+                         this.nvmInstallDir, context);
   }
 
   @Extension
@@ -123,8 +111,6 @@ public class NvmStep extends Step {
       final String nvmIoJsOrgMirrorFromFormData = formData.getString("nvmIoJsOrgMirror");
       final String nvmInstallDir = formData.getString("nvmInstallDir");
 
-      final String nvmInstallNodeVersion = formData.getString("nvmInstallNodeVersion");
-
       NvmStep nvmStep = new NvmStep(versionFromFormData);
 
       if (StringUtils.isNotBlank(nvmInstallURLFromFormData)) {
@@ -139,10 +125,7 @@ public class NvmStep extends Step {
         nvmStep.setNvmIoJsOrgMirror(nvmIoJsOrgMirrorFromFormData);
       }
 
-
       nvmStep.setNvmInstallDir(nvmInstallDir);
-      nvmStep.setNvmInstallNodeVersion(nvmInstallNodeVersion);
-
       return nvmStep;
     }
 
@@ -155,19 +138,18 @@ public class NvmStep extends Step {
 
   public static class Execution extends AbstractStepExecutionImpl {
 
-    private static final long serialVersionUID = 1;
+//    private static final long serialVersionUID = 1;
 
     private final transient String nodeVersion;
     private final transient String nvmInstallURL;
     private final transient String nvmNodeJsOrgMirror;
     private final transient String nvmIoJsOrgMirror;
     private final transient String nvmInstallDir;
-    private final transient String nvmInstallNodeVersion;
 
-    public Execution(final String nodeVersion,final String nvmInstallURL,
-                     final String nvmNodeJsOrgMirror,final String nvmIoJsOrgMirror,
-                     final String nvmInstallDir,
-                     final String nvmInstallNodeVersion,
+
+    public Execution(final String nodeVersion, final String nvmInstallDir,
+                     final String nvmNodeJsOrgMirror, final String nvmIoJsOrgMirror,
+                     final String nvmInstallURL,
                      @Nonnull final StepContext context) {
       super(context);
       this.nodeVersion = nodeVersion;
@@ -175,7 +157,7 @@ public class NvmStep extends Step {
       this.nvmNodeJsOrgMirror = nvmNodeJsOrgMirror;
       this.nvmIoJsOrgMirror = nvmIoJsOrgMirror;
       this.nvmInstallDir = nvmInstallDir;
-      this.nvmInstallNodeVersion = nvmInstallNodeVersion;
+
     }
 
     @Override
@@ -186,9 +168,14 @@ public class NvmStep extends Step {
       workspace.mkdirs();
 
       final NvmWrapperUtil wrapperUtil = new NvmWrapperUtil(workspace, launcher, launcher.getListener());
+
+      String nodeMirrorBinaries = nodeVersion.contains("iojs") ?
+        "NVM_IOJS_ORG_MIRROR=" + StringUtils.defaultIfEmpty(nvmIoJsOrgMirror, NvmDefaults.NVM_IO_JS_ORG_MIRROR):
+        "NVM_NODEJS_ORG_MIRROR=" + StringUtils.defaultIfEmpty(nvmNodeJsOrgMirror, NvmDefaults.NVM_NODE_JS_ORG_MIRROR);
+
+
       final Map<String, String> npmEnvVars = wrapperUtil.getNpmEnvVars(this.nodeVersion, this.nvmInstallURL,
-                                                                       this.nvmNodeJsOrgMirror, this.nvmIoJsOrgMirror,
-                                                                       this.nvmInstallDir);
+                                                                       nodeMirrorBinaries, this.nvmInstallDir);
 
       getContext().newBodyInvoker()
         .withContext(EnvironmentExpander.merge(getContext().get(EnvironmentExpander.class), new ExpanderImpl(npmEnvVars)))

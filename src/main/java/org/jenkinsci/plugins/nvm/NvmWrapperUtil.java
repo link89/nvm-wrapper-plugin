@@ -25,19 +25,18 @@ public class NvmWrapperUtil {
     this.launcher = launcher;
   }
 
-  public Map<String, String> getNpmEnvVars(String nodeVersion, String nvmInstallURL,
-                                           String nvmNodeJsOrgMirror, String nvmIoJsOrgMirror,
-                                           String nvmInstallDir)
+  public Map<String, String> getNpmEnvVars(final String nodeVersion, final String nvmInstallURL,
+                                           final String nvmInstallDir, final  String nodeMirrorBinaries)
     throws IOException, InterruptedException {
 
 
-    String nvmDir = StringUtils.defaultIfEmpty(nvmInstallDir, NvmDefaults.nvmInstallDir);
+    String nvmDir = StringUtils.defaultIfEmpty(nvmInstallDir, NvmDefaults.NVM_INSTALL_DIR);
     nvmDir = nvmDir.endsWith("/") ? StringUtils.stripEnd(nvmDir, "/")  : nvmDir;
     final String nvmFilePath = nvmDir + "/nvm.sh";
 
     if(fileExist(nvmFilePath) == false){ //NVM is not installed
-      int statusCode = installNvm(StringUtils.defaultIfEmpty(nvmInstallURL, NvmDefaults.nvmInstallURL),
-        nvmDir, nodeVersion);
+      int statusCode = installNvm(StringUtils.defaultIfEmpty(nvmInstallURL, NvmDefaults.NVM_INSTALL_URL),
+        nvmDir, nodeMirrorBinaries, nodeVersion);
 
       if (statusCode != 0) {
         throw new AbortException("Failed to install NVM");
@@ -47,9 +46,7 @@ public class NvmWrapperUtil {
       listener.getLogger().println("NVM is already installed\n");
     }
 
-    String mirrorBin = nodeVersion.contains("iojs") ?
-      "NVM_IOJS_ORG_MIRROR=" + StringUtils.defaultIfEmpty(nvmIoJsOrgMirror, NvmDefaults.nvmIoJsOrgMirror) :
-      "NVM_NODEJS_ORG_MIRROR=" + StringUtils.defaultIfEmpty(nvmNodeJsOrgMirror, NvmDefaults.nvmNodeJsOrgMirror);
+
 
 
     Map<String, String> beforeEnv = getExport();
@@ -62,7 +59,7 @@ public class NvmWrapperUtil {
     nvmSourceCmd.add(
         "NVM_DIR=" + nvmDir +
         " && source $NVM_DIR/nvm.sh "+
-        " && " + mirrorBin +  " nvm install " + nodeVersion +
+        " && " + nodeMirrorBinaries +  " nvm install " + nodeVersion +
         " && nvm use " + nodeVersion + " && export > " + envFile );
 
 
@@ -72,7 +69,7 @@ public class NvmWrapperUtil {
 
     afterEnv.forEach((k, v) -> {
       String beforeValue = beforeEnv.get(k);
-      if (!v.equals(beforeValue)) {
+      if (!v.equals(beforeValue)) { // ENV changed between installation
 
         if (k.equals("PATH")) {
           String path = Arrays.stream(v.split(File.pathSeparator))
@@ -132,8 +129,8 @@ public class NvmWrapperUtil {
     return statusCode == 0;
   }
 
-  private Integer installNvm(String nvmInstallURL, String nvmInstallDir,
-                             String nvmInstallNodeVersion) throws IOException, InterruptedException {
+  private Integer installNvm(final String nvmInstallURL, final String nvmInstallDir,
+                             final String nodeMirrorBinaries, final String nvmInstallNodeVersion) throws IOException, InterruptedException {
     listener.getLogger().println("Installing nvm\n");
     FilePath installer = workspace.child("nvm-installer");
     installer.copyFrom(new URL(nvmInstallURL));
@@ -149,17 +146,15 @@ public class NvmWrapperUtil {
 //    only add if default is changed
 //    https://github.com/creationix/nvm/blob/master/install.sh#L300
 //    nvm script just create install dir if it is the default.
-    if(!nvmInstallDir.equals(NvmDefaults.nvmInstallDir)){
+    if(!nvmInstallDir.equals(NvmDefaults.NVM_INSTALL_DIR)){
       cmdBuild.add("NVM_DIR=" + nvmInstallDir);
     }
-
-
 
     if (StringUtils.isNotBlank(nvmInstallNodeVersion)) {
       cmdBuild.add("NODE_VERSION=" + nvmInstallNodeVersion);
     }
-
-    cmdBuild.add("NVM_PROFILE=''"); //Avoid modifying profile
+    cmdBuild.add(nodeMirrorBinaries);
+    cmdBuild.add("NVM_PROFILE=/dev/null"); //Avoid modifying profile
     cmdBuild.add(installer.absolutize().getRemote());
 
     args.add(cmdBuild.stream().collect(Collectors.joining(" ")));
