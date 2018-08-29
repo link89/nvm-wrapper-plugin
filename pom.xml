@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>3.4</version>
+    <version>3.20</version>
     <relativePath/>
   </parent>
   <groupId>io.jenkins.plugins</groupId>
@@ -24,14 +24,15 @@
       <url>https://opensource.org/licenses/MIT</url>
     </license>
   </licenses>
-  <!-- Assuming you want to host on @jenkinsci:
-  <url>https://wiki.jenkins.io/display/JENKINS/TODO+Plugin</url>
+
+  <url>https://wiki.jenkins-ci.org/display/JENKINS/Nvm+Wrapper+Plugin</url>
+
   <scm>
       <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
       <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
       <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
   </scm>
-  -->
+
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
@@ -46,6 +47,14 @@
   </pluginRepositories>
 
 
+  <developers>
+    <developer>
+      <id>atoms</id>
+      <name>Tomas Salazar</name>
+      <email>atomsmail+jenkins@gmail.com</email>
+    </developer>
+  </developers>
+
   <dependencies>
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -58,6 +67,12 @@
       <version>2.5</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>scm-api</artifactId>
+      <version>1.3</version>
+    </dependency>
+
 
   </dependencies>
 </project>
