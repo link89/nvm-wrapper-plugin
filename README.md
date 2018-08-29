@@ -20,7 +20,8 @@ doesn't require `ruby-runtime` to be installed.
 - `gradle uploadArchives` (or 'gradle deploy') - Deploy your plugin to
   the Jenkins Maven repository to be included in the Update Center.
 - `mvn hpi:run` - Run a local jenkins to test
-- ` mvn hpi:run -Djenkins.version=2.102` -Run a local jenkins against a version.
+- `mvn hpi:run -Djenkins.version=2.102` -Run a local jenkins against a version.
+- `mvn clean test -Djenkins.version=2.7.3 -Denforcer.skip=true -B` if local test `nvm unset && nvm unload`
 
 ## Features
 
