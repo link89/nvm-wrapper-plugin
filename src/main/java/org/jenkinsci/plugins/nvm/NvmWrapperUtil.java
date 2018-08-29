@@ -25,8 +25,8 @@ public class NvmWrapperUtil {
     this.launcher = launcher;
   }
 
-  public Map<String, String> getNpmEnvVars(final String nodeVersion, final String nvmInstallURL,
-                                           final String nvmInstallDir, final  String nodeMirrorBinaries)
+  public Map<String, String> getNpmEnvVars(final String nodeVersion, final String nvmInstallDir,
+                                           final String nvmInstallURL, final  String nodeMirrorBinaries)
     throws IOException, InterruptedException {
 
 

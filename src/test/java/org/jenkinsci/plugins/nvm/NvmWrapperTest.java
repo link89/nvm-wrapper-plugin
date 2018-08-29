@@ -12,6 +12,7 @@ import org.jvnet.hudson.test.*;
 import java.io.File;
 
 public class NvmWrapperTest {
+
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule();
   @ClassRule
@@ -19,15 +20,15 @@ public class NvmWrapperTest {
 
 
   private static FreeStyleBuild createBuildWithNvmWrapper(final JenkinsRule j, final NvmWrapper bw,
-                                                      final String command) throws Exception {
+                                                          final String command) throws Exception {
 
     // Create a new freestyle project with a unique name, with an "Execute shell" build step;
     // if running on Windows, this will be an "Execute Windows batch command" build step
     FreeStyleProject project = j.createFreeStyleProject();
     FilePath workspace = j.jenkins.getWorkspaceFor(project);
-    workspace.child("nvm").mkdirs();
-    String absPath = new File(workspace.child("nvm").toURI()).getAbsolutePath();
-    bw.setNvmInstallDir(absPath);
+    workspace.child(".nvm").mkdirs();
+    String absPath = new File(workspace.child(".nvm").toURI()).getAbsolutePath();
+
 
     project.getBuildWrappersList().add(bw);
     Builder step = Functions.isWindows() ? new BatchFile(command) : new Shell(command);
@@ -39,7 +40,6 @@ public class NvmWrapperTest {
 
     return build;
   }
-
 
   @Test
   public void freestyleNVMOptionVersion() throws Exception {
@@ -54,20 +54,20 @@ public class NvmWrapperTest {
   }
 
 
- @Test
+  @Test
   public void freestyleNVMOptionIojs() throws Exception {
 
 
     final String command = "echo $PATH";
-    NvmWrapper nvmWrapper = new NvmWrapper("iojs", null,
+    NvmWrapper nvmWrapper = new NvmWrapper("iojs-v3.3.1", null,
       null, null, null);
 
     FreeStyleBuild build = createBuildWithNvmWrapper(jenkinsRule, nvmWrapper, command);
-    jenkinsRule.assertLogContains(".nvm/versions/io.js/", build);
+    jenkinsRule.assertLogContains("/versions/io.js/", build);
   }
 
 
-
+  @Test
   public void freestyleNVMOptionNvmNodeJsOrgMirror() throws Exception {
 
 
@@ -80,7 +80,7 @@ public class NvmWrapperTest {
   }
 
 
-
+  @Test
   public void pipelineNVM() throws Exception {
 
     WorkflowJob project = jenkinsRule.createProject(WorkflowJob.class);
@@ -89,6 +89,6 @@ public class NvmWrapperTest {
 
     WorkflowRun build = jenkinsRule.buildAndAssertSuccess(project);
 
-    jenkinsRule.assertLogContains("v0.10.25/bin", build);
+    jenkinsRule.assertLogContains("v0.10.9/bin", build);
   }
 }

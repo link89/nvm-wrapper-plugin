@@ -7,4 +7,4 @@ jdk:
   - oraclejdk8
 env:
   - TERM=dumb
-script: mvn clean test -Djenkins.version=2.7.3 -Denforcer.skip=true
+script: mvn clean test -Djenkins.version=2.7.3 -Denforcer.skip=true -B

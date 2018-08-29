@@ -77,8 +77,9 @@ public class NvmStep extends Step {
 
   @Override
   public StepExecution start(final StepContext context) throws Exception {
-    return new Execution(this.version, this.nvmInstallURL, this.nvmNodeJsOrgMirror, this.nvmIoJsOrgMirror,
-                         this.nvmInstallDir, context);
+    return new Execution(this.version, this.nvmInstallDir,
+                        this.nvmInstallURL, this.nvmNodeJsOrgMirror,
+                        this.nvmIoJsOrgMirror, context);
   }
 
   @Extension
@@ -148,9 +149,8 @@ public class NvmStep extends Step {
 
 
     public Execution(final String nodeVersion, final String nvmInstallDir,
-                     final String nvmNodeJsOrgMirror, final String nvmIoJsOrgMirror,
-                     final String nvmInstallURL,
-                     @Nonnull final StepContext context) {
+                     final String nvmInstallURL, final String nvmNodeJsOrgMirror,
+                     final String nvmIoJsOrgMirror, @Nonnull final StepContext context) {
       super(context);
       this.nodeVersion = nodeVersion;
       this.nvmInstallURL = nvmInstallURL;
@@ -174,8 +174,8 @@ public class NvmStep extends Step {
         "NVM_NODEJS_ORG_MIRROR=" + StringUtils.defaultIfEmpty(nvmNodeJsOrgMirror, NvmDefaults.NVM_NODE_JS_ORG_MIRROR);
 
 
-      final Map<String, String> npmEnvVars = wrapperUtil.getNpmEnvVars(this.nodeVersion, this.nvmInstallURL,
-                                                                       nodeMirrorBinaries, this.nvmInstallDir);
+      final Map<String, String> npmEnvVars = wrapperUtil.getNpmEnvVars(this.nodeVersion, this.nvmInstallDir,
+                                                                        this.nvmInstallURL, nodeMirrorBinaries);
 
       getContext().newBodyInvoker()
         .withContext(EnvironmentExpander.merge(getContext().get(EnvironmentExpander.class), new ExpanderImpl(npmEnvVars)))

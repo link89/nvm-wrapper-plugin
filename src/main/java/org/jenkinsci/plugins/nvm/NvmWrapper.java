@@ -70,8 +70,8 @@ public class NvmWrapper extends BuildWrapper {
       "NVM_NODEJS_ORG_MIRROR=" + StringUtils.defaultIfEmpty(nvmNodeJsOrgMirror, NvmDefaults.NVM_NODE_JS_ORG_MIRROR);
 
     final Map<String, String> npmEnvVars = this.wrapperUtil.getNpmEnvVars(
-                                            this.version, this.nvmInstallURL,
-                                            this.nvmInstallDir, nodeMirrorBinaries);
+                                            this.version, this.nvmInstallDir,
+                                            this.nvmInstallURL, nodeMirrorBinaries);
 
     return new BuildWrapper.Environment() {
       @Override
