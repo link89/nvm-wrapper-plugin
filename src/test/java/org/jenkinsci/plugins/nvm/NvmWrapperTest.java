@@ -72,7 +72,7 @@ public class NvmWrapperTest {
 
 
     final String command = "echo $PATH";
-    NvmWrapper nvmWrapper = new NvmWrapper("v8.11.4", null,
+    NvmWrapper nvmWrapper = new NvmWrapper("v8.12.0", null,
       "https://npm.taobao.org/mirrors/node", null, null);
 
     FreeStyleBuild build = createBuildWithNvmWrapper(jenkinsRule, nvmWrapper, command);

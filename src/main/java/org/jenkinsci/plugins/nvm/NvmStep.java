@@ -139,13 +139,14 @@ public class NvmStep extends Step {
 
   public static class Execution extends AbstractStepExecutionImpl {
 
-//    private static final long serialVersionUID = 1;
+    private static final long serialVersionUID = 2L;
 
-    private final transient String nodeVersion;
-    private final transient String nvmInstallURL;
-    private final transient String nvmNodeJsOrgMirror;
-    private final transient String nvmIoJsOrgMirror;
-    private final transient String nvmInstallDir;
+
+    private final String nodeVersion;
+    private final String nvmInstallURL;
+    private final String nvmNodeJsOrgMirror;
+    private final String nvmIoJsOrgMirror;
+    private final String nvmInstallDir;
 
 
     public Execution(final String nodeVersion, final String nvmInstallDir,

@@ -33,7 +33,7 @@ public class NvmWrapper extends BuildWrapper {
     this.nvmInstallURL = StringUtils.defaultIfEmpty(nvmInstallURL, NvmDefaults.NVM_INSTALL_URL);
     this.nvmNodeJsOrgMirror = StringUtils.defaultIfEmpty(nvmNodeJsOrgMirror, NvmDefaults.NVM_NODE_JS_ORG_MIRROR);
     this.nvmIoJsOrgMirror = StringUtils.defaultIfEmpty(nvmIoJsOrgMirror, NvmDefaults.NVM_IO_JS_ORG_MIRROR);
-    this.nvmInstallDir = nvmInstallDir;
+    this.nvmInstallDir = StringUtils.defaultIfEmpty(nvmInstallDir, NvmDefaults.NVM_INSTALL_DIR);
   }
 
   public String getVersion() {
