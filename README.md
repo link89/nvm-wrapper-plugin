@@ -1,4 +1,4 @@
-# [Jenkins nvm Plugin (nvm-wrapper)](https://wiki.jenkins-ci.org/display/JENKINS/Nvm+Wrapper+Plugin)
+# [Jenkins nvm Plugin (nvm-wrapper)](https://plugins.jenkins.io/nvm-wrapper)
 
 [![Build Status](https://img.shields.io/travis/tacoss/nvm-wrapper-plugin/master.svg?style=flat)](https://travis-ci.org/tacoss/nvm-wrapper-plugin)
 
@@ -8,24 +8,29 @@ A java/groovy version of [Jenkins nvm plugin](https://github.com/codevise/jenkin
 doesn't require `ruby-runtime` to be installed.
 
 ## Usage
-- Please follow this [steps](https://wiki.jenkins-ci.org/display/JENKINS/Nvm+Wrapper+Plugin)
+- Please follow this [steps](https://plugins.jenkins.io/nvm-wrapper)
 
 ## Build
-- It was built using gradle 2.3 and Java 1.8
+- It was built using maven and Java 1.8
 
-- `gradle jpi` - Build the Jenkins plugin file, which can then be
+- `mvn package` - Build the Jenkins plugin file, which can then be
   found in the build directory. The file will currently end in ".hpi".
-- `gradle install` - Build the Jenkins plugin and install it into your
+- `mvn install` - Build the Jenkins plugin and install it into your
   local Maven repository.
 - `gradle uploadArchives` (or 'gradle deploy') - Deploy your plugin to
   the Jenkins Maven repository to be included in the Update Center.
-- `gradle server` - Run a local jenkins to test
+- `mvn hpi:run` - Run a local jenkins to test
+- `mvn hpi:run -Djenkins.version=2.102` -Run a local jenkins against a version.
+- `mvn clean test -Djenkins.version=2.7.3 -Denforcer.skip=true -B` if local test `nvm unset && nvm unload`
 
 ## Features
 
 - Installs `nvm.sh`
 - Installs node version configured for job.
 - Amends build environment to use configured node version.
+
+## [Issues](https://issues.jenkins-ci.org/browse/JENKINS-53301?jql=project%20%3D%20JENKINS%20AND%20status%20%3D%20Open%20AND%20component%20%3D%20nvm-wrapper-plugin)
+
 
 ## Acknowledgements
 

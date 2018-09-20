@@ -27,13 +27,13 @@ public class NvmWrapper extends BuildWrapper {
   private transient NvmWrapperUtil wrapperUtil;
 
   @DataBoundConstructor
-  public NvmWrapper(String version, String nvmInstallURL, String nvmNodeJsOrgMirror, String nvmIoJsOrgMirror,
-                    String nvmInstallDir) {
+  public NvmWrapper(String version, String nvmInstallDir, String nvmNodeJsOrgMirror,
+                    String nvmIoJsOrgMirror, String nvmInstallURL) {
     this.version = version;
-    this.nvmInstallURL = StringUtils.isNotBlank(nvmInstallURL) ? nvmInstallURL : NvmDefaults.nvmInstallURL;
-    this.nvmNodeJsOrgMirror = StringUtils.isNotBlank(nvmNodeJsOrgMirror) ? nvmNodeJsOrgMirror : NvmDefaults.nvmNodeJsOrgMirror;
-    this.nvmIoJsOrgMirror = StringUtils.isNotBlank(nvmIoJsOrgMirror) ? nvmIoJsOrgMirror : NvmDefaults.nvmIoJsOrgMirror;
-    this.nvmInstallDir = nvmInstallDir;
+    this.nvmInstallURL = StringUtils.defaultIfEmpty(nvmInstallURL, NvmDefaults.NVM_INSTALL_URL);
+    this.nvmNodeJsOrgMirror = StringUtils.defaultIfEmpty(nvmNodeJsOrgMirror, NvmDefaults.NVM_NODE_JS_ORG_MIRROR);
+    this.nvmIoJsOrgMirror = StringUtils.defaultIfEmpty(nvmIoJsOrgMirror, NvmDefaults.NVM_IO_JS_ORG_MIRROR);
+    this.nvmInstallDir = StringUtils.defaultIfEmpty(nvmInstallDir, NvmDefaults.NVM_INSTALL_DIR);
   }
 
   public String getVersion() {
@@ -56,13 +56,22 @@ public class NvmWrapper extends BuildWrapper {
     return nvmInstallDir;
   }
 
+  public void setNvmInstallDir(String nvmInstallDir) {
+    this.nvmInstallDir = nvmInstallDir;
+  }
+
   @Override
   public BuildWrapper.Environment setUp(AbstractBuild build, Launcher launcher, final BuildListener listener)
     throws IOException, InterruptedException {
     this.wrapperUtil = new NvmWrapperUtil(build.getWorkspace(), launcher, listener);
-    final Map<String, String> npmEnvVars = this.wrapperUtil
-      .getNpmEnvVars(this.version, this.nvmInstallURL, this.nvmNodeJsOrgMirror, this.nvmIoJsOrgMirror,
-                     this.nvmInstallDir);
+
+    String nodeMirrorBinaries = this.version.contains("iojs") ?
+      "NVM_IOJS_ORG_MIRROR=" + StringUtils.defaultIfEmpty(nvmIoJsOrgMirror, NvmDefaults.NVM_IO_JS_ORG_MIRROR):
+      "NVM_NODEJS_ORG_MIRROR=" + StringUtils.defaultIfEmpty(nvmNodeJsOrgMirror, NvmDefaults.NVM_NODE_JS_ORG_MIRROR);
+
+    final Map<String, String> npmEnvVars = this.wrapperUtil.getNpmEnvVars(
+                                            this.version, this.nvmInstallDir,
+                                            this.nvmInstallURL, nodeMirrorBinaries);
 
     return new BuildWrapper.Environment() {
       @Override
