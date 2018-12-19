@@ -1,4 +1,6 @@
 sudo: false
+install:
+  - snyk test
 cache:
   directories:
   - $HOME/.gradle
@@ -8,3 +10,5 @@ jdk:
 env:
   - TERM=dumb
 script: mvn clean test -Djenkins.version=2.7.3 -Denforcer.skip=true -B
+after_success:
+  - snyk monitor
