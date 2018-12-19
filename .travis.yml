@@ -6,10 +6,9 @@ node_js: "10.14.2"
 install:
   - npm install -g snyk
 cache:
-  - node
   directories:
   - $HOME/.m2
-
+  - $HOME/.npm
 env:
   - TERM=dumb
 script: mvn clean test -Djenkins.version=2.7.3 -Denforcer.skip=true -B && snyk test
