@@ -58,7 +58,7 @@ public class NvmWrapperUtil {
     nvmSourceCmd.add("-c");
     nvmSourceCmd.add(
         "NVM_DIR=" + nvmDir +
-        " && source $NVM_DIR/nvm.sh "+
+        " && source $NVM_DIR/nvm.sh --no-use"+
         " && " + nodeMirrorBinaries +  " nvm install " + nodeVersion +
         " && nvm use " + nodeVersion + " && export > " + envFile );
 
