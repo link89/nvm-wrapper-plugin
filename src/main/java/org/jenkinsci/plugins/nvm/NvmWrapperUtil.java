@@ -10,7 +10,11 @@ import org.apache.commons.lang.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class NvmWrapperUtil {
@@ -19,7 +23,7 @@ public class NvmWrapperUtil {
   private Launcher launcher;
   private TaskListener listener;
 
-  NvmWrapperUtil(final FilePath workspace, Launcher launcher, TaskListener listener) {
+  NvmWrapperUtil(final FilePath workspace, final Launcher launcher, final TaskListener listener) {
     this.workspace = workspace;
     this.listener = listener;
     this.launcher = launcher;
@@ -30,11 +34,11 @@ public class NvmWrapperUtil {
     throws IOException, InterruptedException {
 
 
-    String nvmDir = StringUtils.defaultIfEmpty(nvmInstallDir, NvmDefaults.NVM_INSTALL_DIR);
-    nvmDir = nvmDir.endsWith("/") ? StringUtils.stripEnd(nvmDir, "/")  : nvmDir;
+    String rawNvmDir = StringUtils.defaultIfEmpty(nvmInstallDir, NvmDefaults.NVM_INSTALL_DIR);
+    final String nvmDir = rawNvmDir.endsWith("/") ? StringUtils.stripEnd(rawNvmDir, "/")  : rawNvmDir;
     final String nvmFilePath = nvmDir + "/nvm.sh";
 
-    if(fileExist(nvmFilePath) == false){ //NVM is not installed
+    if (!fileExist(nvmFilePath)) { //NVM is not installed
       int statusCode = installNvm(StringUtils.defaultIfEmpty(nvmInstallURL, NvmDefaults.NVM_INSTALL_URL),
         nvmDir, nodeMirrorBinaries, nodeVersion);
 
@@ -42,54 +46,41 @@ public class NvmWrapperUtil {
         throw new AbortException("Failed to install NVM");
       }
 
-    }else{
+    } else {
       listener.getLogger().println("NVM is already installed\n");
     }
 
 
-
-
-    Map<String, String> beforeEnv = getExport();
-
-    String envFile="env.txt";
-
+    Map<String, String> beforeEnv = getEnvVars();
+    String envFile = "env.txt";
     ArgumentListBuilder nvmSourceCmd = new ArgumentListBuilder();
     nvmSourceCmd.add("bash");
     nvmSourceCmd.add("-c");
+
     nvmSourceCmd.add(
-        "NVM_DIR=" + nvmDir +
-        " && source $NVM_DIR/nvm.sh --no-use"+
+        " source " + nvmDir + "/nvm.sh --no-use" +
         " && " + nodeMirrorBinaries +  " nvm install " + nodeVersion +
-        " && nvm use " + nodeVersion + " && export > " + envFile );
+        " && nvm use " + nodeVersion + " && export > " + envFile);
 
 
-    Map<String, String> afterEnv = getExport(nvmSourceCmd, envFile);
+    Map<String, String> afterEnv = runCmdAndGetEnvVars(nvmSourceCmd, envFile);
+    String beforePath = beforeEnv.get("PATH") != null ? beforeEnv.get("PATH") : "";
 
-    Map<String, String> newEnvVars = new HashMap<>();
 
-    afterEnv.forEach((k, v) -> {
-      String beforeValue = beforeEnv.get(k);
-      if (!v.equals(beforeValue)) { // ENV changed between installation
+    String path = Arrays.stream(beforePath.split(File.pathSeparator))
+      .filter(it -> !it.matches(".*\\.nvm.*"))
+      .collect(Collectors.joining(File.pathSeparator));
 
-        if (k.equals("PATH")) {
-          String path = Arrays.stream(v.split(File.pathSeparator))
-            .filter(it -> it.matches(".*\\.nvm.*"))
-            .collect(Collectors.joining(File.pathSeparator));
-          newEnvVars.put("PATH", afterEnv.get("PATH"));
-          newEnvVars.put("PATH+NVM", path);
-        } else {
-          newEnvVars.put(k, v);
-        }
+    beforeEnv.put("PATH", afterEnv.get("PATH"));
+    beforeEnv.put("NVM_DIR", nvmDir);
 
-      }
-    });
-
-    return newEnvVars;
+    return beforeEnv;
   }
 
 
 
-  private Map<String, String> getExport(ArgumentListBuilder args, String destFile ) throws IOException, InterruptedException {
+  private Map<String, String> runCmdAndGetEnvVars(final ArgumentListBuilder args, final String destFile)
+    throws IOException, InterruptedException {
 
     Integer statusCode = launcher.launch().pwd(workspace).cmds(args)
       .stdout(listener.getLogger())
@@ -103,20 +94,20 @@ public class NvmWrapperUtil {
 
     workspace.child(destFile).delete();
 
-    return toMap(out);
+    return envFiletoMap(out);
   }
-  private Map<String, String> getExport() throws IOException, InterruptedException {
+  private Map<String, String> getEnvVars() throws IOException, InterruptedException {
 
-    String destFile="env.txt";
+    String destFile = "env.txt";
     ArgumentListBuilder args = new ArgumentListBuilder();
     args.add("bash");
     args.add("-c");
     args.add("export > " + destFile);
-    return getExport(args, destFile);
+    return runCmdAndGetEnvVars(args, destFile);
 
   }
 
-  private Boolean fileExist(String filePath) throws IOException, InterruptedException {
+  private Boolean fileExist(final String filePath) throws IOException, InterruptedException {
     ArgumentListBuilder args = new ArgumentListBuilder();
       args.add("bash");
       args.add("-c");
@@ -130,7 +121,8 @@ public class NvmWrapperUtil {
   }
 
   private Integer installNvm(final String nvmInstallURL, final String nvmInstallDir,
-                             final String nodeMirrorBinaries, final String nvmInstallNodeVersion) throws IOException, InterruptedException {
+                             final String nodeMirrorBinaries, final String nvmInstallNodeVersion)
+    throws IOException, InterruptedException {
     listener.getLogger().println("Installing nvm\n");
     FilePath installer = workspace.child("nvm-installer");
     installer.copyFrom(new URL(nvmInstallURL));
@@ -142,19 +134,14 @@ public class NvmWrapperUtil {
 
 
     List<String> cmdBuild = new ArrayList<>();
+    cmdBuild.add("export NVM_DIR=" + nvmInstallDir + " && ");
 
-//    only add if default is changed
-//    https://github.com/creationix/nvm/blob/master/install.sh#L300
-//    nvm script just create install dir if it is the default.
-    if(!nvmInstallDir.equals(NvmDefaults.NVM_INSTALL_DIR)){
-      cmdBuild.add("NVM_DIR=" + nvmInstallDir);
-    }
 
     if (StringUtils.isNotBlank(nvmInstallNodeVersion)) {
       cmdBuild.add("NODE_VERSION=" + nvmInstallNodeVersion);
     }
     cmdBuild.add(nodeMirrorBinaries);
-    cmdBuild.add("NVM_PROFILE=/dev/null"); //Avoid modifying profile
+    cmdBuild.add("PROFILE=/dev/null"); //Avoid modifying profile
     cmdBuild.add(installer.absolutize().getRemote());
 
     args.add(cmdBuild.stream().collect(Collectors.joining(" ")));
@@ -165,7 +152,7 @@ public class NvmWrapperUtil {
 
   }
 
-  private Map<String, String> toMap(String export) {
+  private Map<String, String> envFiletoMap(final String export) {
     Map<String, String> r = new HashMap<>();
 
     Arrays.asList(export.split("[\n|\r]")).forEach(line -> {

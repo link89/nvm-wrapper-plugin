@@ -8,7 +8,13 @@ import hudson.Launcher;
 import hudson.model.TaskListener;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.plugins.workflow.steps.*;
+import org.jenkinsci.plugins.workflow.steps.AbstractStepExecutionImpl;
+import org.jenkinsci.plugins.workflow.steps.BodyExecutionCallback;
+import org.jenkinsci.plugins.workflow.steps.EnvironmentExpander;
+import org.jenkinsci.plugins.workflow.steps.Step;
+import org.jenkinsci.plugins.workflow.steps.StepContext;
+import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
+import org.jenkinsci.plugins.workflow.steps.StepExecution;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -105,7 +111,7 @@ public class NvmStep extends Step {
     }
 
     @Override
-    public Step newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+    public Step newInstance(final StaplerRequest req, final JSONObject formData) throws FormException {
       final String versionFromFormData = formData.getString("version");
       final String nvmInstallURLFromFormData = formData.getString("nvmInstallURL");
       final String nvmNodeJsOrgMirrorFromFormData = formData.getString("nvmNodeJsOrgMirror");
@@ -171,7 +177,7 @@ public class NvmStep extends Step {
       final NvmWrapperUtil wrapperUtil = new NvmWrapperUtil(workspace, launcher, launcher.getListener());
 
       String nodeMirrorBinaries = nodeVersion.contains("iojs") ?
-        "NVM_IOJS_ORG_MIRROR=" + StringUtils.defaultIfEmpty(nvmIoJsOrgMirror, NvmDefaults.NVM_IO_JS_ORG_MIRROR):
+        "NVM_IOJS_ORG_MIRROR=" + StringUtils.defaultIfEmpty(nvmIoJsOrgMirror, NvmDefaults.NVM_IO_JS_ORG_MIRROR) :
         "NVM_NODEJS_ORG_MIRROR=" + StringUtils.defaultIfEmpty(nvmNodeJsOrgMirror, NvmDefaults.NVM_NODE_JS_ORG_MIRROR);
 
 
@@ -179,7 +185,8 @@ public class NvmStep extends Step {
                                                                         this.nvmInstallURL, nodeMirrorBinaries);
 
       getContext().newBodyInvoker()
-        .withContext(EnvironmentExpander.merge(getContext().get(EnvironmentExpander.class), new ExpanderImpl(npmEnvVars)))
+        .withContext(EnvironmentExpander.merge(getContext().get(EnvironmentExpander.class),
+          new ExpanderImpl(npmEnvVars)))
         .withCallback(BodyExecutionCallback.wrap(getContext()))
         .start();
 
@@ -187,7 +194,7 @@ public class NvmStep extends Step {
     }
 
     @Override
-    public void stop(@Nonnull Throwable cause) throws Exception {
+    public void stop(final @Nonnull Throwable cause) throws Exception {
       // No need to do anything heres
     }
 
@@ -197,7 +204,7 @@ public class NvmStep extends Step {
 
     private final Map<String, String> envOverrides;
 
-    public ExpanderImpl(final Map<String, String> envOverrides) {
+     ExpanderImpl(final Map<String, String> envOverrides) {
       this.envOverrides = envOverrides;
     }
 

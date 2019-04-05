@@ -27,8 +27,8 @@ public class NvmWrapper extends BuildWrapper {
   private transient NvmWrapperUtil wrapperUtil;
 
   @DataBoundConstructor
-  public NvmWrapper(String version, String nvmInstallDir, String nvmNodeJsOrgMirror,
-                    String nvmIoJsOrgMirror, String nvmInstallURL) {
+  public NvmWrapper(final String version, final String nvmInstallDir, final String nvmNodeJsOrgMirror,
+                    final String nvmIoJsOrgMirror, final String nvmInstallURL) {
     this.version = version;
     this.nvmInstallURL = StringUtils.defaultIfEmpty(nvmInstallURL, NvmDefaults.NVM_INSTALL_URL);
     this.nvmNodeJsOrgMirror = StringUtils.defaultIfEmpty(nvmNodeJsOrgMirror, NvmDefaults.NVM_NODE_JS_ORG_MIRROR);
@@ -56,17 +56,18 @@ public class NvmWrapper extends BuildWrapper {
     return nvmInstallDir;
   }
 
-  public void setNvmInstallDir(String nvmInstallDir) {
+  public void setNvmInstallDir(final String nvmInstallDir) {
     this.nvmInstallDir = nvmInstallDir;
   }
 
   @Override
-  public BuildWrapper.Environment setUp(AbstractBuild build, Launcher launcher, final BuildListener listener)
+  public BuildWrapper.Environment setUp(final AbstractBuild build,
+                                        final Launcher launcher, final BuildListener listener)
     throws IOException, InterruptedException {
     this.wrapperUtil = new NvmWrapperUtil(build.getWorkspace(), launcher, listener);
 
     String nodeMirrorBinaries = this.version.contains("iojs") ?
-      "NVM_IOJS_ORG_MIRROR=" + StringUtils.defaultIfEmpty(nvmIoJsOrgMirror, NvmDefaults.NVM_IO_JS_ORG_MIRROR):
+      "NVM_IOJS_ORG_MIRROR=" + StringUtils.defaultIfEmpty(nvmIoJsOrgMirror, NvmDefaults.NVM_IO_JS_ORG_MIRROR) :
       "NVM_NODEJS_ORG_MIRROR=" + StringUtils.defaultIfEmpty(nvmNodeJsOrgMirror, NvmDefaults.NVM_NODE_JS_ORG_MIRROR);
 
     final Map<String, String> npmEnvVars = this.wrapperUtil.getNpmEnvVars(
@@ -75,7 +76,7 @@ public class NvmWrapper extends BuildWrapper {
 
     return new BuildWrapper.Environment() {
       @Override
-      public void buildEnvVars(Map<String, String> env) {
+      public void buildEnvVars(final Map<String, String> env) {
 
         EnvVars envVars = new EnvVars(env);
         envVars.putAll(npmEnvVars);
@@ -85,14 +86,14 @@ public class NvmWrapper extends BuildWrapper {
   }
 
   @Extension
-  public final static class DescriptorImpl extends BuildWrapperDescriptor {
+  public static final class DescriptorImpl extends BuildWrapperDescriptor {
     @Override
     public String getDisplayName() {
       return "Run the build in an NVM managed environment";
     }
 
     @Override
-    public boolean isApplicable(AbstractProject<?, ?> item) {
+    public boolean isApplicable(final AbstractProject<?, ?> item) {
       return true;
     }
 

@@ -17,11 +17,11 @@ doesn't require `ruby-runtime` to be installed.
   found in the build directory. The file will currently end in ".hpi".
 - `mvn install` - Build the Jenkins plugin and install it into your
   local Maven repository.
-- `gradle uploadArchives` (or 'gradle deploy') - Deploy your plugin to
+- `mvn clean -DskipTests -Darguments=-DskipTests release:prepare release:perform` - Deploy to
   the Jenkins Maven repository to be included in the Update Center.
 - `mvn hpi:run` - Run a local jenkins to test
 - `mvn hpi:run -Djenkins.version=2.102` -Run a local jenkins against a version.
-- `mvn clean test -Djenkins.version=2.7.3 -Denforcer.skip=true -B` if local test `nvm unset && nvm unload`
+- `mvn clean test -Djenkins.version=2.7.3 -Denforcer.skip=true -B` if local test `nvm unload`
 
 ## Features
 

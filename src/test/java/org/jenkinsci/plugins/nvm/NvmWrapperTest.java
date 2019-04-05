@@ -18,7 +18,6 @@ public class NvmWrapperTest {
   @ClassRule
   public static BuildWatcher bw = new BuildWatcher();
 
-
   private static FreeStyleBuild createBuildWithNvmWrapper(final JenkinsRule j, final NvmWrapper bw,
                                                           final String command) throws Exception {
 
@@ -26,9 +25,12 @@ public class NvmWrapperTest {
     // if running on Windows, this will be an "Execute Windows batch command" build step
     FreeStyleProject project = j.createFreeStyleProject();
     FilePath workspace = j.jenkins.getWorkspaceFor(project);
+    workspace.child(".nvm").delete();
     workspace.child(".nvm").mkdirs();
-    String absPath = new File(workspace.child(".nvm").toURI()).getAbsolutePath();
 
+    String absPath = new File(workspace.child(".nvm").toURI()).getAbsolutePath();
+    System.out.println("----->>" + absPath);
+    bw.setNvmInstallDir(absPath);
 
     project.getBuildWrappersList().add(bw);
     Builder step = Functions.isWindows() ? new BatchFile(command) : new Shell(command);
@@ -85,8 +87,6 @@ public class NvmWrapperTest {
 
     WorkflowJob project = jenkinsRule.createProject(WorkflowJob.class);
     project.setDefinition(new CpsFlowDefinition("node { nvm('v0.10.9') { sh 'env'} }", true));
-
-
     WorkflowRun build = jenkinsRule.buildAndAssertSuccess(project);
 
     jenkinsRule.assertLogContains("v0.10.9/bin", build);
