@@ -65,13 +65,20 @@ public class NvmWrapperUtil {
 
     Map<String, String> afterEnv = runCmdAndGetEnvVars(nvmSourceCmd, envFile);
     String beforePath = beforeEnv.get("PATH") != null ? beforeEnv.get("PATH") : "";
+    String afterPath = afterEnv.get("PATH") != null ? afterEnv.get("PATH") : "";
 
+    System.out.println("PATH ---->>>> " + afterPath);
 
-    String path = Arrays.stream(beforePath.split(File.pathSeparator))
-      .filter(it -> !it.matches(".*\\.nvm.*"))
+    String cleanPath = Arrays.stream(beforePath.split(File.pathSeparator))
+      .filter(it -> !it.matches(".*nvm.*")) //remove all things related to nvm
       .collect(Collectors.joining(File.pathSeparator));
 
-    beforeEnv.put("PATH", afterEnv.get("PATH"));
+    String nodePath = Arrays.stream(afterPath.split(File.pathSeparator))
+      .filter(it -> it.matches(".*nvm.*"))
+      .collect(Collectors.joining(File.pathSeparator));
+
+
+    beforeEnv.put("PATH", nodePath + File.pathSeparator + cleanPath);
     beforeEnv.put("NVM_DIR", nvmDir);
 
     return beforeEnv;
