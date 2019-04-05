@@ -1,7 +1,8 @@
 # [Jenkins nvm Plugin (nvm-wrapper)](https://plugins.jenkins.io/nvm-wrapper)
 
-[![Build Status](https://img.shields.io/travis/tacoss/nvm-wrapper-plugin/master.svg?style=flat)](https://travis-ci.org/tacoss/nvm-wrapper-plugin)
+[![Travis Build Status](https://img.shields.io/travis/tacoss/nvm-wrapper-plugin/master.svg?style=flat)](https://travis-ci.org/tacoss/nvm-wrapper-plugin)
 
+[https://ci.jenkins.io/job/Plugins/job/nvm-wrapper-plugin/](https://ci.jenkins.io/job/Plugins/job/nvm-wrapper-plugin/)
 
 
 A java/groovy version of [Jenkins nvm plugin](https://github.com/codevise/jenkins-nvm-plugin), it
@@ -22,6 +23,7 @@ doesn't require `ruby-runtime` to be installed.
 - `mvn hpi:run` - Run a local jenkins to test
 - `mvn hpi:run -Djenkins.version=2.102` -Run a local jenkins against a version.
 - `mvn clean test -Djenkins.version=2.7.3 -Denforcer.skip=true -B` if local test `nvm unload`
+- `mvn clean test -Djenkins.version=2.7.3 -Denforcer.skip=true -B -Dtest=NvmWrapperTest` - Test 
 
 ## Features
 

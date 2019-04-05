@@ -29,7 +29,6 @@ public class NvmWrapperTest {
     workspace.child(".nvm").mkdirs();
 
     String absPath = new File(workspace.child(".nvm").toURI()).getAbsolutePath();
-    System.out.println("----->>" + absPath);
     bw.setNvmInstallDir(absPath);
 
     project.getBuildWrappersList().add(bw);
@@ -55,7 +54,6 @@ public class NvmWrapperTest {
 
   }
 
-
   @Test
   public void freestyleNVMOptionIojs() throws Exception {
 
@@ -67,7 +65,6 @@ public class NvmWrapperTest {
     FreeStyleBuild build = createBuildWithNvmWrapper(jenkinsRule, nvmWrapper, command);
     jenkinsRule.assertLogContains("/versions/io.js/", build);
   }
-
 
   @Test
   public void freestyleNVMOptionNvmNodeJsOrgMirror() throws Exception {
@@ -86,9 +83,14 @@ public class NvmWrapperTest {
   public void pipelineNVM() throws Exception {
 
     WorkflowJob project = jenkinsRule.createProject(WorkflowJob.class);
-    project.setDefinition(new CpsFlowDefinition("node { nvm('v0.10.9') { sh 'env'} }", true));
+    project.setDefinition(new CpsFlowDefinition(new StringBuilder()
+      .append("node { ")
+      .append("sh \"mkdir -p ${env.WORKSPACE}/.nvm\"\n")
+      .append("nvm('version' : 'v0.10.25', 'nvmInstallDir' : '.nvm' ) ")
+      .append("{ sh 'env'}")
+      .append(" }").toString(), true));
     WorkflowRun build = jenkinsRule.buildAndAssertSuccess(project);
 
-    jenkinsRule.assertLogContains("v0.10.9/bin", build);
+    jenkinsRule.assertLogContains("v0.10.25/bin", build);
   }
 }
